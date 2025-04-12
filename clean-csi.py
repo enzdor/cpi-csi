@@ -1,11 +1,7 @@
-import numpy as np
 import datetime as dt
 import pandas as pd
-import sqlite3
 import sys
 import argparse
-import pickle
-import gc
 from io import StringIO
 
 #################################################
@@ -80,5 +76,6 @@ io_dirty = StringIO(final_line)
 
 df_dirty = pd.read_csv(io_dirty)
 df_dirty['date'] = [dt.date(x, y, 1) for x, y in zip(df_dirty['Year'], df_dirty['Month'])]
+df_dirty = df_dirty.rename(columns = {'Index': 'csi'})
 
-df_dirty.to_csv(args.outfile, columns = ['Index', 'date'], index = False)
+df_dirty.to_csv(args.outfile, columns = ['csi', 'date'], index = False)

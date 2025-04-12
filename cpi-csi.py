@@ -1,11 +1,8 @@
-import numpy as np
 import datetime as dt
 import pandas as pd
-import sqlite3
 import sys
 import argparse
-import pickle
-import gc
+from flaml import AutoML
 
 #################################################
 
@@ -79,4 +76,30 @@ if len(df_csi) < 1:
     print("csi csv doesn't contain any rows.")
     quit()
 
-print(df_cpi[:3], df_csi[:3])
+df_cpi = df_cpi.rename(columns = {'observation_date': 'date', 'CPIAUCSL': 'cpi'})
+
+df = df_cpi.merge(df_csi, on='date')
+df = df.set_index('date')
+
+y = df['cpi']
+X = []
+
+for i in range(len(y)):
+    X.append([df.index[i], df['csi'].iloc[i]])
+
+print(len(df.index.unique()), len(df.index))
+
+automl = AutoML()
+
+automl_settings = {
+    "time_budget": 10,  
+    "metric": "mape",  
+    "task": "ts_forecast",  
+    "log_file_name": "cpi-csi.log",
+    "eval_method": "holdout",
+    "log_type": "all",
+    "label": "cpi",
+}
+
+automl.fit(dataframe=df, **automl_settings, period=24)
+print(automl.predict(X))
