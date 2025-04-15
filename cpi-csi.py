@@ -1,7 +1,9 @@
-import datetime as dt
-import pandas as pd
+import os
 import sys
 import argparse
+import datetime as dt
+import pandas as pd
+import numpy as np
 from flaml import AutoML
 
 #################################################
@@ -32,31 +34,45 @@ parser.add_argument("csi_path", help="""
 parser.add_argument("csi_test", type=float, help="""
         Consumer survey index to be used in the next month's prediction.
 """)
-parser.add_argument("-o", "--outfile", dest="outfile", default="model.pkl", help="""
-        The path for the outfile, the resulting model.
+parser.add_argument("-o", "--outfile", dest="outfile", help="""
+        Path to outfile, if it already exists, appends result to it, if it
+        doesn't create a new one and write the all of the past data and the
+        result.
 """)
 
 args = parser.parse_args()
 
-if len(sys.argv) < 3:
-    print("""
+if len(sys.argv) < 4:
+    print("""[{dt.datetime.now()}] Error:
         There was no path provided for the monthly cpi and csi data.
         Corect usage:
             
-            python cpi-csi.py path_to_cpi.csv path_to_csi.csv
+            python cpi-csi.py path_to_cpi.csv path_to_csi.csv csi_test
             
         If you want help run:
             
             python cpi-csi.py --help
     """)
-    quit()
+    quit(-1)
 
 if len(args.cpi_path) < 1 or len(args.csi_path) < 1:
-    print(f"""
+    print(f"""[{dt.datetime.now()}] Error:
         There was not path provided for the monthly cpi or csi data.
         Paths provided, cpi: {args.cpi_path} , csi:{args.csi_path} .
 
-            python cpi-csi.py path_to_cpi.csv path_to_csi.csv
+            python cpi-csi.py path_to_cpi.csv path_to_csi.csv csi_test
+            
+        If you want help run:
+            
+            python cpi-csi.py --help
+    """)
+    quit(-1)
+
+if type(args.csi_test) != float:
+    print(f"""[{dt.datetime.now()}] Error:
+        The csi_test is not a float. Correct usage:
+
+            python cpi-csi.py path_to_cpi.csv path_to_csi.csv csi_test
             
         If you want help run:
             
@@ -71,11 +87,11 @@ df_csi = pd.read_csv(args.csi_path)
 
 if len(df_cpi) < 1:
     print("cpi csv doesn't contain any rows.")
-    quit()
+    quit(-1)
 
 if len(df_csi) < 1:
     print("csi csv doesn't contain any rows.")
-    quit()
+    quit(-1)
 
 df_cpi = df_cpi.rename(columns = {'observation_date': 'date', 'CPIAUCSL': 'cpi'})
 
@@ -85,7 +101,7 @@ df = df.rename(columns = {'date': 'timestamp'})
 automl = AutoML()
 
 automl_settings = {
-    "time_budget": 100,  
+    "time_budget": 1,  
     "metric": "mape",  
     "task": "ts_forecast",  
     "log_file_name": "cpi-csi.log",
@@ -96,9 +112,34 @@ automl_settings = {
 }
 
 next_month = pd.to_datetime(df['timestamp'].max()) + pd.DateOffset(months = 1)
-print(next_month)
 X_test = pd.DataFrame({'timestamp' : [next_month], 'csi' : args.csi_test})
 
 automl.fit(dataframe=df, **automl_settings, period=1)
 prediction = automl.predict(X_test)
 print(next_month, " cpi prediction:", prediction.to_list()[0])
+
+if args.outfile:
+    if os.path.exists(args.outfile):
+        res = pd.read_csv(args.outfile)
+
+        if list(res.columns) != list(df.columns) + ['predicted_cpi']:
+            print("""
+                  File doesn't contain necessary columns:
+
+                  timestamp,cpi,csi,predicted_cpi
+            """)
+            quit()
+
+        to_append = pd.DataFrame([[next_month, np.nan, np.nan, prediction.to_list()[0]]], columns=list(res.columns))
+        res = res._append(to_append, ignore_index=True)
+        res.to_csv(args.outfile, index=False)
+
+    else:
+        res = df
+        res['predicted_cpi'] = np.nan
+        res.reset_index()
+        to_append = pd.DataFrame([[next_month, np.nan, np.nan, prediction.to_list()[0]]], columns=list(res.columns))
+        res = res._append(to_append, ignore_index=True)
+
+        res.to_csv(args.outfile, index=False)
+
