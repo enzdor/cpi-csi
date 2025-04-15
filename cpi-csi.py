@@ -13,11 +13,9 @@ from flaml import AutoML
 #################################################
 
 parser = argparse.ArgumentParser(description="""
-        python predict.py [-h] cpi.csv csi.csv 
-
         Create a model to predict future consumer price index 
         based on the consumer sentiment index from the University of 
-        Michingan using FLAML's automl. Links for the monthly data:
+        Michingan using FLAML's automl. Links for the data:
 
         csi: https://data.sca.isr.umich.edu/data-archive/mine.php
         cpi: https://fred.stlouisfed.org/series/CPIAUCSL
@@ -30,6 +28,9 @@ parser.add_argument("cpi_path", help="""
 parser.add_argument("csi_path", help="""
         Path to the file containing monthly csi data from the surveys of
         consumers by the University of Michigan.
+""")
+parser.add_argument("csi_test", type=float, help="""
+        Consumer survey index to be used in the next month's prediction.
 """)
 parser.add_argument("-o", "--outfile", dest="outfile", default="model.pkl", help="""
         The path for the outfile, the resulting model.
@@ -79,27 +80,25 @@ if len(df_csi) < 1:
 df_cpi = df_cpi.rename(columns = {'observation_date': 'date', 'CPIAUCSL': 'cpi'})
 
 df = df_cpi.merge(df_csi, on='date')
-df = df.set_index('date')
-
-y = df['cpi']
-X = []
-
-for i in range(len(y)):
-    X.append([df.index[i], df['csi'].iloc[i]])
-
-print(len(df.index.unique()), len(df.index))
+df = df.rename(columns = {'date': 'timestamp'})
 
 automl = AutoML()
 
 automl_settings = {
-    "time_budget": 10,  
+    "time_budget": 100,  
     "metric": "mape",  
     "task": "ts_forecast",  
     "log_file_name": "cpi-csi.log",
     "eval_method": "holdout",
     "log_type": "all",
     "label": "cpi",
+    "estimator_list": ["xgboost"],
 }
 
-automl.fit(dataframe=df, **automl_settings, period=24)
-print(automl.predict(X))
+next_month = pd.to_datetime(df['timestamp'].max()) + pd.DateOffset(months = 1)
+print(next_month)
+X_test = pd.DataFrame({'timestamp' : [next_month], 'csi' : args.csi_test})
+
+automl.fit(dataframe=df, **automl_settings, period=1)
+prediction = automl.predict(X_test)
+print(next_month, " cpi prediction:", prediction.to_list()[0])
