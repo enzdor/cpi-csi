@@ -128,7 +128,7 @@ if args.outfile:
 
                   timestamp,cpi,csi,predicted_cpi
             """)
-            quit()
+            quit(-1)
 
         to_append = pd.DataFrame([[next_month, np.nan, np.nan, prediction.to_list()[0]]], columns=list(res.columns))
         res = res._append(to_append, ignore_index=True)

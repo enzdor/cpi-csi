@@ -1,10 +1,9 @@
-import os
 import sys
 import argparse
 import datetime as dt
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
 from flaml import AutoML
 
 #################################################
@@ -32,11 +31,6 @@ parser.add_argument("cpi_path", help="""
 parser.add_argument("csi_path", help="""
         Path to the file containing monthly csi data from the surveys of
         consumers by the University of Michigan.
-""")
-parser.add_argument("-o", "--outfile", dest="outfile", help="""
-        Path to outfile, if it already exists, appends result to it, if it
-        doesn't create a new one and write the all of the past data and the
-        result.
 """)
 
 args = parser.parse_args()
@@ -107,7 +101,6 @@ automl_settings = {
     "estimator_list": ["xgboost"],
 }
 
-
 automl.fit(dataframe=train_df, **automl_settings, period=time_horizon)
 
 y_pred = automl.predict(X_test)
@@ -126,34 +119,9 @@ ax2.plot(X_test['timestamp'], X_test['csi'], label="CSI", color="green")
 ax2.set_ylabel("CSI")
 plt.legend()
 
-
 fig.tight_layout()
 plt.show()
 
+print("R2 of true CPI vs predicted CPI: ", r2_score(y_test, y_pred))
+
 quit()
-
-if args.outfile:
-    if os.path.exists(args.outfile):
-        res = pd.read_csv(args.outfile)
-
-        if list(res.columns) != list(df.columns) + ['predicted_cpi']:
-            print("""
-                  File doesn't contain necessary columns:
-
-                  timestamp,cpi,csi,predicted_cpi
-            """)
-            quit()
-
-        to_append = pd.DataFrame([[next_month, np.nan, np.nan, prediction.to_list()[0]]], columns=list(res.columns))
-        res = res._append(to_append, ignore_index=True)
-        res.to_csv(args.outfile, index=False)
-
-    else:
-        res = df
-        res['predicted_cpi'] = np.nan
-        res.reset_index()
-        to_append = pd.DataFrame([[next_month, np.nan, np.nan, prediction.to_list()[0]]], columns=list(res.columns))
-        res = res._append(to_append, ignore_index=True)
-
-        res.to_csv(args.outfile, index=False)
-
