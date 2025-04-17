@@ -97,7 +97,7 @@ X_test = test_df[['timestamp', 'csi']]
 y_test = test_df['cpi']
 
 automl_settings = {
-    "time_budget": 3,
+    "time_budget": 30,
     "metric": "mape",  
     "task": "ts_forecast",  
     "log_file_name": "cpi-csi.log",
@@ -112,11 +112,22 @@ automl.fit(dataframe=train_df, **automl_settings, period=time_horizon)
 
 y_pred = automl.predict(X_test)
 
-plt.plot(X_test, y_test, label="Actual level")
-plt.plot(X_test, y_pred, label="FLAML forecast")
-plt.xlabel("CSI")
-plt.ylabel("CPI")
+fig, ax = plt.subplots()
+
+ax.plot(X_test['timestamp'], y_test, label="Actual level CPI")
+ax.plot(X_test['timestamp'], y_pred, label="FLAML forecast CPI")
+ax.set_xlabel("timestamp")
+ax.set_ylabel("CPI")
 plt.legend()
+
+ax2 = ax.twinx()
+
+ax2.plot(X_test['timestamp'], X_test['csi'], label="CSI", color="green")
+ax2.set_ylabel("CSI")
+plt.legend()
+
+
+fig.tight_layout()
 plt.show()
 
 quit()
