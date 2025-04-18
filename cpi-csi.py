@@ -135,7 +135,6 @@ else:
         """)
         quit(-1)
 
-
 df = pd.DataFrame()
 input_df = pd.DataFrame()
 
@@ -146,11 +145,11 @@ if not args.data_file:
     df_csi = pd.read_csv(args.csi_path)
 
     if len(df_cpi) < 1:
-        print("[{dt.datetime.now()}]cpi csv doesn't contain any rows.")
+        print(f"[{dt.datetime.now()}] Error: cpi csv doesn't contain any rows.")
         quit(-1)
 
     if len(df_csi) < 1:
-        print("[{dt.datetime.now()}]csi csv doesn't contain any rows.")
+        print(f"[{dt.datetime.now()}] Error: csi csv doesn't contain any rows.")
         quit(-1)
 
     df_cpi = df_cpi.rename(columns = {'observation_date': 'date', 'CPIAUCSL': 'cpi'})
@@ -164,10 +163,9 @@ else:
     df = pd.read_csv(args.data_file)
 
     del df['predicted_cpi']
-    print(input_df.columns, df.columns)
 
     if list(input_df.columns) != ['timestamp', 'cpi','csi','predicted_cpi']:
-        print("""
+        print(f"""[{dt.datetime.now()}]
               File doesn't contain necessary columns:
 
               timestamp,cpi,csi,predicted_cpi
@@ -176,8 +174,22 @@ else:
 
 
     if len(df) < 1:
-        print(f"[{dt.datetime.now()}]data file doesn't contain any rows")
+        print(f"[{dt.datetime.now()}] Error: data file doesn't contain any rows")
+        quit(-1)
 
+    i = 1
+    aa = np.where(pd.isnull(input_df))
+    for a in aa[1]:
+        cols = ['timestamp', 'cpi', 'csi']
+        i += 1
+
+        if a == 0 or a == 1 or a == 2:
+            print(f"""[{dt.datetime.now()}] Error:
+    There are missing values in the {cols[a]} column. There should
+    be no missing values in this column. The first missing value is
+    in row {i}.
+            """)
+            quit(-1)
 
 automl = AutoML()
 
@@ -194,8 +206,6 @@ automl_settings = {
 
 next_month = pd.to_datetime(df['timestamp'].max()) + pd.DateOffset(months = 1)
 X_test = pd.DataFrame({'timestamp' : [next_month], 'csi' : args.csi_test})
-
-print(X_test)
 
 automl.fit(dataframe=df, **automl_settings, period=1)
 prediction = automl.predict(X_test)
