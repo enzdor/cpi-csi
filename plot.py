@@ -64,36 +64,42 @@ if len(df) < 1:
 rows = df.shape[0]
 
 horizons = [12, 12 * 5, 12 * 10, rows]
-fig, ax = plt.subplots()
 
-#df = df[rows - 12:]
-yearly_dates = []
-dates_pos = []
+for h in horizons:
+    dates_pos = []
 
-l = 1
-for i in range(rows):
-    if l == 1:
-        yearly_dates.append(df.loc[i, 'timestamp'])
-        dates_pos.append(i)
-        l = l + 1
-    elif l == 12:
-        l = 1
-    else:
-        l = l + 1
+    df1 = df[rows - h - 1:]
+    if h == rows:
+        df1 = df
 
-ax.plot(df['timestamp'], df['cpi'], label="Actual level CPI")
-ax.plot(df['timestamp'], df['predicted_cpi'], label="FLAML forecast CPI")
-ax.set_xlabel("timestamp")
-ax.set_ylabel("CPI")
-ax.set_xticks(dates_pos)
-ax.tick_params(axis='x', labelrotation=90)
-plt.legend()
+    l = 1
+    for i in range(df1.shape[0]):
+        if l == 1:
+            dates_pos.append(i)
+            if h > 12:
+                l = l + 1
+        elif l == 12 and h > 12 * 11:
+            l = 1
+        elif l == 6 and (h < 12 * 11 and h > 12):
+            l = 1
+        else:
+            l = l + 1
 
-ax2 = ax.twinx()
+    fig, ax = plt.subplots()
 
-ax2.plot(df['timestamp'], df['csi'], label="CSI", color="green")
-ax2.set_ylabel("CSI")
-plt.legend()
+    ax.plot(df1['timestamp'], df1['cpi'], label="Actual level CPI")
+    ax.plot(df1['timestamp'], df1['predicted_cpi'], label="FLAML forecast CPI")
+    ax.set_xlabel("timestamp")
+    ax.set_ylabel("CPI")
+    ax.set_xticks(dates_pos)
+    ax.tick_params(axis='x', labelrotation=90)
+    plt.legend()
 
-fig.tight_layout()
-plt.show()
+    ax2 = ax.twinx()
+
+    ax2.plot(df1['timestamp'], df1['csi'], label="CSI", color="green")
+    ax2.set_ylabel("CSI")
+    plt.legend()
+
+    fig.tight_layout()
+    plt.show()
