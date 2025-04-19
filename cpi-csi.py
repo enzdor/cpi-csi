@@ -46,6 +46,14 @@ parser.add_argument("-d", "--data-file", dest="data_file", help="""
         timestamp,csi,cpi,predicted_cpi .
 """)
 
+#################################################
+
+
+    # check if there are missing args
+
+
+#################################################
+
 args = parser.parse_args()
 
 if not args.csi_test:
@@ -139,6 +147,15 @@ df = pd.DataFrame()
 input_df = pd.DataFrame()
 
 if not args.data_file:
+
+    #################################################
+
+
+        # open cpi and csi files
+
+
+    #################################################
+
     print(f"[{dt.datetime.now()}] Loading cpi data from {args.cpi_path}")
     df_cpi = pd.read_csv(args.cpi_path)
     print(f"[{dt.datetime.now()}] Loading csi data from {args.csi_path}")
@@ -158,6 +175,15 @@ if not args.data_file:
     df = df.rename(columns = {'date': 'timestamp'})
 
 else:
+
+    #################################################
+
+
+        # open data file and check for missing stuff
+
+
+    #################################################
+
     print(f"[{dt.datetime.now()}] Loading data from {args.data_file}")
     input_df = pd.read_csv(args.data_file)
     df = pd.read_csv(args.data_file)
@@ -198,6 +224,14 @@ else:
             """)
             quit(-1)
 
+#################################################
+
+
+    # create and train model and make prediction
+
+
+#################################################
+
 automl = AutoML()
 
 automl_settings = {
@@ -215,9 +249,18 @@ next_month = pd.to_datetime(df['timestamp'].max()) + pd.DateOffset(months = 1)
 X_test = pd.DataFrame({'timestamp' : [next_month], 'csi' : args.csi_test})
 
 automl.fit(dataframe=df, **automl_settings, period=1)
+
 prediction = automl.predict(X_test)
 print(next_month, " cpi prediction:", prediction.to_list()[0])
 prediction = round(prediction.to_list()[0], 3)
+
+#################################################
+
+
+    # save data
+
+
+#################################################
 
 if args.outfile:
     if os.path.exists(args.outfile):

@@ -60,6 +60,14 @@ if len(df) < 1:
     print("cpi csv doesn't contain any rows.")
     quit(-1)
 
+#################################################
+
+
+    # create plots for different time horizons
+
+
+#################################################
+
 rows = df.shape[0]
 
 horizons = [12, 12 * 5, 12 * 10, rows]
@@ -70,6 +78,14 @@ for h in horizons:
     df1 = df[rows - h - 1:]
     if h == rows:
         df1 = df
+
+    #################################################
+
+
+        # save wanted labels for plots
+
+
+    #################################################
 
     l = 1
     for i in range(df1.shape[0]):
@@ -83,6 +99,15 @@ for h in horizons:
             l = 1
         else:
             l = l + 1
+
+    #################################################
+
+
+        # make plots
+
+
+    #################################################
+
 
     fig, ax = plt.subplots()
 

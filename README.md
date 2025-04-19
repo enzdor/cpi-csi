@@ -69,3 +69,8 @@ Table 1: The Index of Consumer Sentiment
 Month,Year,Index,
 ```
 
+## TODO
+
+- make it possible to use data file as input for test.py
+- make flag for output path for images for plot.py
+

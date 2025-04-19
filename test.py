@@ -61,6 +61,14 @@ if len(args.cpi_path) < 1 or len(args.csi_path) < 1:
     """)
     quit(-1)
 
+#################################################
+
+
+    # opening files
+
+
+#################################################
+
 print(f"[{dt.datetime.now()}] Loading cpi data from {args.cpi_path}")
 df_cpi = pd.read_csv(args.cpi_path)
 print(f"[{dt.datetime.now()}] Loading csi data from {args.csi_path}")
@@ -73,6 +81,14 @@ if len(df_cpi) < 1:
 if len(df_csi) < 1:
     print("csi csv doesn't contain any rows.")
     quit(-1)
+
+#################################################
+
+
+    # create, train model and make predictions
+
+
+#################################################
 
 df_cpi = df_cpi.rename(columns = {'observation_date': 'date', 'CPIAUCSL': 'cpi'})
 
@@ -104,6 +120,14 @@ automl_settings = {
 automl.fit(dataframe=train_df, **automl_settings, period=time_horizon)
 
 y_pred = automl.predict(X_test)
+
+#################################################
+
+
+    # plot results
+
+
+#################################################
 
 fig, ax = plt.subplots()
 

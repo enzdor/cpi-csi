@@ -59,6 +59,14 @@ if len(args.csi_path) < 1:
     """)
     quit()
 
+#################################################
+
+
+    # open clean and save new file
+
+
+#################################################
+
 file_csi = open(args.csi_path)
 lines = file_csi.readlines()
 lines = lines[1:]
