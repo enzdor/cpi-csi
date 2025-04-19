@@ -191,6 +191,13 @@ else:
             """)
             quit(-1)
 
+    if len(input_df['timestamp'].unique()) != len(input_df['timestamp']):
+            print(f"""[{dt.datetime.now()}] Error:
+    The values in the timestamp column are not unique. Please make
+    sure that they are.
+            """)
+            quit(-1)
+
 automl = AutoML()
 
 automl_settings = {
