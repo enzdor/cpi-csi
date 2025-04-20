@@ -6,6 +6,8 @@ Some python scripts to predict monthly Consumer Price Index (CPI) with Index of 
 python3 name_of_script.py --help
 ```
 
+If you want to understand how the scripts work, I encourage you to read them.
+
 ## clean-csi.py
 
 clean-csi.py is a script to clean raw csi monthly data so that it can be then used in cpi-csi.py. The data that is cleaned should be downloaded from this [website](https://data.sca.isr.umich.edu/data-archive/mine.php). The following is the usage:

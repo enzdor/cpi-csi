@@ -1,4 +1,5 @@
 import sys
+import os
 import argparse
 import datetime as dt
 import pandas as pd
@@ -19,10 +20,12 @@ parser = argparse.ArgumentParser(description="""
         three different time ranges, last year, last 5 years, last
         10 years and for the whole dataset.
 """)
-
 parser.add_argument("data_path", help="""
         Path to the file containing the required data with the columns
         timestamp,csi,cpi,predicted_cpi .
+""")
+parser.add_argument("-o", "--outdir", dest="img_dir", help="""
+        The directory path to save the images to.
 """)
 
 args = parser.parse_args()
@@ -126,4 +129,11 @@ for h in horizons:
     plt.legend()
 
     fig.tight_layout()
-    plt.show()
+
+    if args.img_dir:
+        os.makedirs(args.img_dir, exist_ok=True)
+        plt.savefig(f"{args.img_dir}/plot_h{h}.png")
+    else:
+        plt.show()
+
+

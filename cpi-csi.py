@@ -109,23 +109,6 @@ if not args.data_file:
         quit(-1)
 
 else:
-    if not args.data_file:
-        print(f"""[{dt.datetime.now()}] Error:
-            There was not path provided for the monthly cpi or csi data.
-            The data flag was not provided either. Correct usage:
-
-                python cpi-csi.py path_to_cpi.csv path_to_csi.csv -t csi_test
-
-            or:
-
-                python cpi-csi.py -d="path_to_data.csv" -t csi_test
-                
-            If you want help run:
-                
-                python cpi-csi.py --help
-        """)
-        quit(-1)
-
     if len(args.data_file) < 1:
         print(f"""[{dt.datetime.now()}] Error:
             There was not path provided for the monthly data file.
