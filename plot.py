@@ -115,7 +115,13 @@ for h in horizons:
     fig, ax = plt.subplots()
 
     ax.plot(df1['timestamp'], df1['cpi'], label="Actual level CPI")
-    ax.plot(df1['timestamp'], df1['predicted_cpi'], label="FLAML forecast CPI")
+
+    df2 = df1.dropna()
+    if len(df2['predicted_cpi']) < 2:
+        ax.scatter(df1['timestamp'], df1['predicted_cpi'], label="FLAML forecast CPI", color="orange")
+    else:
+        ax.plot(df1['timestamp'], df1['predicted_cpi'], label="FLAML forecast CPI", color="orange")
+
     ax.set_xlabel("timestamp")
     ax.set_ylabel("CPI")
     ax.set_xticks(dates_pos)

@@ -259,6 +259,7 @@ if args.outfile:
 
         to_append = pd.DataFrame([[next_month.date(), np.nan, np.nan, prediction]], columns=list(res.columns))
         res = res._append(to_append, ignore_index=True)
+        res['timestamp'] = pd.to_datetime(res['timestamp']).dt.date
         res.to_csv(args.outfile, index=False)
 
     else:
@@ -266,6 +267,7 @@ if args.outfile:
         res['predicted_cpi'] = np.nan
         res.reset_index()
         to_append = pd.DataFrame([[next_month.date(), np.nan, np.nan, prediction]], columns=list(res.columns))
+        res['timestamp'] = pd.to_datetime(res['timestamp']).dt.date
         res = res._append(to_append, ignore_index=True)
 
         res.to_csv(args.outfile, index=False)
@@ -274,5 +276,6 @@ elif args.data_file:
 
     to_append = pd.DataFrame([[next_month.date(), np.nan, np.nan, prediction]], columns=list(res.columns))
     res = res._append(to_append, ignore_index=True)
+    res['timestamp'] = pd.to_datetime(res['timestamp']).dt.date
     res.to_csv(args.data_file, index=False)
 
